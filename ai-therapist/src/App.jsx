@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import VirtualAssistant from './components/VirtualAssistant';
 import { getAIResponse } from './services/ai-service';
@@ -9,13 +9,13 @@ function App() {
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
 
-  // Initialize speech recognition
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
+  // Create a ref to store the recognition instance
+  const recognitionRef = useRef(null);
 
   // Initialize speech synthesis
   const speechSynthesis = window.speechSynthesis;
   const speak = useCallback((text) => {
+    speechSynthesis.cancel(); // Stop any previous speech
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
@@ -30,14 +30,17 @@ function App() {
     );
     if (preferredVoice) {
       utterance.voice = preferredVoice;
-    } else {
-      console.warn('Preferred voice not found, using default');
     }
     
     speechSynthesis.speak(utterance);
   }, []);
 
   useEffect(() => {
+    // Initialize speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    const recognition = recognitionRef.current;
+
     recognition.continuous = true;
     recognition.interimResults = true;
 
@@ -49,43 +52,57 @@ function App() {
       if (event.results[current].isFinal) {
         const aiResponse = await getAIResponse(transcriptText);
         setResponse(aiResponse);
-        speak(aiResponse); // Speak the AI response
+        speak(aiResponse);
       }
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
+      setIsListening(false);
     };
 
-    // Load voices when they're available
-    speechSynthesis.onvoiceschanged = () => {
-      speechSynthesis.getVoices();
+    recognition.onend = () => {
+      console.log('Recognition ended');
+      setIsListening(false);
     };
 
+    // Cleanup function
     return () => {
-      speechSynthesis.cancel(); // Cleanup any ongoing speech
-    };
-  }, [speak]);
-
-  const toggleListening = () => {
-    if (isListening) {
-      recognition.stop();
-      recognition.onend = () => { // Add this handler
-        setIsListening(false);
-        setTranscript('');
-      };
-    } else {
-      recognition.start();
-      setIsListening(true);
-    }
-  };
-  useEffect(() => {
-    // ... existing code ...
-    return () => {
-      recognition.stop(); // Force stop on unmount
+      if (recognition) {
+        recognition.stop();
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+      }
       speechSynthesis.cancel();
     };
   }, [speak]);
+
+  const toggleListening = useCallback(() => {
+    if (recognitionRef.current) {
+      if (isListening) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+        setTranscript('');
+      } else {
+        setTranscript('');
+        setResponse('');
+        try {
+          recognitionRef.current.start();
+          setIsListening(true);
+        } catch (error) {
+          console.error('Failed to start recognition:', error);
+          // If recognition is already started, stop it and start again
+          recognitionRef.current.stop();
+          setTimeout(() => {
+            recognitionRef.current.start();
+            setIsListening(true);
+          }, 100);
+        }
+      }
+    }
+  }, [isListening]);
+
   return (
     <div className="app-container">
       <header>
