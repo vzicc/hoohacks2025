@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize with API key and correct version
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-export async function getAIResponse(userInput) {
+export async function getAIResponse(userInput, context = '') {
   try {
     // Validate API key
     if (!import.meta.env.VITE_GEMINI_API_KEY) {
@@ -13,12 +13,14 @@ export async function getAIResponse(userInput) {
     // Simplify model initialization
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Changed model name
     
-    const prompt = `You are a helpful AI health assistant. Keep your responses concise and friendly. If the
-    user asks about something specific, provide a detailed answer and ask follow up questions to get more information.
-    Focus on general health and wellness advice. If asked about serious medical conditions, 
-    remind the user to consult a healthcare professional.
+    const prompt = `You are a helpful AI health assistant. Keep your responses concise and friendly. 
+    Previous conversation context:
+    ${context}
     
-    User input: ${userInput}`;
+    User input: ${userInput}
+    
+    Consider the context of the previous conversation when responding. If the user refers to something 
+    mentioned earlier, use that information in your response.`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
