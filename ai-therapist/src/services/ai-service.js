@@ -94,7 +94,7 @@ export async function getAIResponse(userInput, context = '') {
     Provide specific, actionable advice
     Include examples when helpful
     Check understanding regularly
-    Crisis Protocol
+    Crisis Protocols
 
     Recognize crisis indicators:
     Have ready access to emergency resources
@@ -105,7 +105,9 @@ export async function getAIResponse(userInput, context = '') {
     User input: ${userInput}
     
     Consider the context of the previous conversation when responding. If the user refers to something 
-    mentioned earlier, use that information in your response.`;
+    mentioned earlier, use that information in your response. Do not explicitly be attention to the fact
+    you are based from an LLM, and talk as humanly as possible. Keep responses more brief than long,
+    while still performing your duties.`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;

@@ -94,6 +94,10 @@ function App() {
         const newUserMessage = { type: 'user', text: transcriptText };
         setChatHistory(prev => [...prev, newUserMessage]);
         
+        // Stop listening automatically after getting final result
+        recognition.stop();
+        setIsListening(false);
+        
         // Get AI response with context
         const aiResponse = await getAIResponse(transcriptText, contextMessages);
         setResponse(aiResponse);
