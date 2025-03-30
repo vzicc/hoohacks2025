@@ -1,0 +1,167 @@
+/* General styling for the page */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #6a5acd, #4682b4); /* Blue to Purple gradient */
+    flex-direction: column;
+    text-align: center;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    transition: transform 0.3s ease; /* Smooth transition for page content */
+}
+
+/* Page content wrapper */
+/* Page content wrapper */
+.page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 5%); /* Subtract sidebar width */
+    transition: transform 0.3s ease; /* Smooth transition when sidebar opens */
+    position: relative; /* Ensure content remains in its proper flow */
+    z-index: 10; /* Ensure it is above sidebar */
+}
+
+/* When sidebar is open, shift page content to the right */
+#sidebar.open + .page-content {
+    transform: translateX(12.5%); /* Move content right by 12.5% when sidebar opens */
+}
+
+/* Prevent overflow of page content */
+.page-content * {
+    box-sizing: border-box; /* Ensures padding and margin are inside the content's width */
+    overflow: visible; /* Prevent content from being hidden */
+}
+
+/* Sidebar */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 5%; /* Initially 5% of the screen width */
+    background-color: black; /* Sidebar background color */
+    transition: width 0.3s ease; /* Smooth transition for resizing */
+    z-index: 100;
+}
+
+/* Sidebar content styling */
+#sidebar-content {
+    margin-top: 60px; /* Space from the top button */
+    padding: 20px;
+    text-align: center;
+    display: none; /* Initially hide the link text */
+}
+
+/* Show the link text only when the sidebar is open */
+#sidebar.open #sidebar-content {
+    display: block; /* Make the link text visible when the sidebar is extended */
+}
+
+/* Link inside sidebar */
+#sidebar-content a {
+    color: white;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+/* Hamburger button styling */
+#menu-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%; /* Keep it circular */
+    padding: 20px; /* Smaller padding to reduce button size */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions for color and scaling */
+    width: 30px; /* Smaller width */
+    height: 30px; /* Smaller height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#menu-btn:hover {
+    background-color: #444; /* Darker background when hovering */
+    transform: scale(1.1); /* Slightly enlarge the button when hovered */
+}
+
+/* When sidebar is open, expand its width */
+#sidebar.open {
+    width: 12.5%; /* Expand to 12.5% of the screen width */
+}
+
+/* When sidebar is open, shift page content to the right */
+#sidebar.open + .page-content {
+    transform: translateX(12.5%); /* Move content right by 12.5% when sidebar opens */
+}
+
+/* Style for the Welcome message */
+.welcome-message {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    opacity: 0;  /* Initially hidden */
+    animation: fadeInLeft 2.5s forwards;  /* Fade-in animation for the welcome message */
+    margin-bottom: 20px;  /* Space between the welcome message and the link */
+}
+
+/* Keyframes for the fade-in left to right animation */
+@keyframes fadeInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-50px); /* Start from the left */
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0); /* End at the normal position */
+    }
+}
+
+/* Style for the link */
+#local-link {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;  /* Remove underline */
+    opacity: 0;  /* Initially hidden */
+    animation: fadeInLeft 1.5s forwards;  /* Fade-in animation for the link (same as the welcome message) */
+}
+
+/* Hover effect for the link */
+#local-link:hover {
+    color: #6956d5;
+    text-decoration: underline;
+}
+
+/* Center the footer with the link */
+footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Style for the image and the white frame */
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.framed-image {
+    width: 20%; /* Make the image 50% of its current size */
+    height: auto;
+    border: 5px solid white; /* White border around the image */
+    border-radius: 15px; /* Optional rounded corners for the frame */
+    cursor: pointer; /* Changes cursor to indicate the image is clickable */
+}

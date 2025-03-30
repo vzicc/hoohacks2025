@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <button id="menu-btn">☰</button>
+        <div id="sidebar-content">
+            <a id="local-link" href="http://localhost:5173">Talk to Heather</a>
+        </div>
+    </div>
+
+    <!-- Page content wrapper -->
+    <div class="page-content">
+        <!-- Welcome Message (Now above the image) -->
+        <div class="welcome-message">
+            Welcome to our interactive mental health assistant
+        </div>
+
+        <!-- Image Section (Image resized to 60% of its original size) -->
+        <div class="image-container">
+            <img class="framed-image" src="HeatherAISS.png" alt="Heather AI">
+        </div>
+
+        <footer>
+            <!-- Footer or other content can go here -->
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript to toggle the sidebar class and move the content
+        const menuBtn = document.getElementById("menu-btn");
+        const sidebar = document.getElementById("sidebar");
+
+        menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+        });
+    </script>
+</body>
+</html>
