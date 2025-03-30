@@ -9,7 +9,6 @@ Welcome to the **Mental Health Chatbot** project! This repository contains the c
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Introduction
 
