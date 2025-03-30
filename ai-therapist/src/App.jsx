@@ -156,6 +156,18 @@ function App() {
 
   const messageContainerRef = useRef(null);
 
+  // Add this function to handle scrolling
+  const scrollToBottom = () => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    }
+  };
+
+  // Add useEffect to scroll when chatHistory updates
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory]); // This will trigger whenever chatHistory changes
+
   return (
     <div className="app-container">
       <header>

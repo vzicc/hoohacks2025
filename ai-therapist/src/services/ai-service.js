@@ -66,6 +66,8 @@ export async function getAIResponse(userInput, context = '') {
     Leave door open for future conversations
 
     Guidelines & Limitations
+    
+    DO NOT TALK FOR OVER 18 SECONDS
 
     Language & Communication:
     Use empathetic, non-judgmental language

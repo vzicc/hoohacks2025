@@ -79,18 +79,6 @@ main {
   height: 100% !important;
 }
 
-/* Add a subtle glow effect */
-.virtual-assistant::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at center, rgba(244, 236, 200, 0) 0%, rgba(90, 181, 255, 0.993) 70%);
-}
-
 /* Update chat panel styles */
 .chat-panel {
   height: 100%;
@@ -133,7 +121,14 @@ main {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: calc(100vh - 140px); /* Set maximum height */
+  max-height: calc(100vh - 140px);
+  scroll-behavior: smooth; /* Add smooth scrolling */
+}
+
+/* Optional: Add some bottom padding to ensure the last message is fully visible */
+.message-container::after {
+  content: '';
+  padding-bottom: 20px;
 }
 
 /* Fix microphone button positioning */

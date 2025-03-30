@@ -6,56 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module';
 
-// Matrix background component
-const MatrixBackground = () => {
-  const { scene } = useThree();
-  const particlesCount = 1000;
-  const positions = useMemo(() => {
-    const pos = new Float32Array(particlesCount * 3);
-    for (let i = 0; i < particlesCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 10;
-      pos[i * 3 + 1] = Math.random() * 10 - 5;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
-    }
-    return pos;
-  }, []);
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    for (let i = 0; i < particlesCount; i++) {
-      const i3 = i * 3;
-      state.scene.children.forEach((child) => {
-        if (child.isPoints) {
-          child.geometry.attributes.position.array[i3 + 1] -= 0.01;
-          if (child.geometry.attributes.position.array[i3 + 1] < -5) {
-            child.geometry.attributes.position.array[i3 + 1] = 5;
-          }
-          child.geometry.attributes.position.needsUpdate = true;
-        }
-      });
-    }
-  });
-
-  return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.05}
-        color="#ffffff"
-        transparent
-        opacity={0.5}
-        sizeAttenuation
-      />
-    </points>
-  );
-};
 
 // Face component that handles the 3D model
 const Face = ({ isSpeaking }) => {
@@ -74,35 +25,34 @@ const Face = ({ isSpeaking }) => {
       .setMeshoptDecoder(MeshoptDecoder);
 
     loader.load('/models/facecap.glb', (gltf) => {
+      
       const mesh = gltf.scene.children[0];
       meshRef.current = mesh;
 
-      // Increased scale for bigger avatar
       mesh.scale.set(6, 6, 6);
-      mesh.position.set(0, 0, 0); // Adjusted position to center
+      mesh.position.set(0, 0, 0);
 
-      // Apply materials
+      // Apply new materials for a clean, white appearance
       mesh.traverse((child) => {
         if (child.isMesh) {
           if (child.name.toLowerCase().includes('eye')) {
-            child.material = new THREE.MeshPhongMaterial({
-              color: new THREE.Color(0xffffff),
-              emissive: new THREE.Color(0x111111),
-              specular: new THREE.Color(0xffffff),
-              shininess: 100,
+            // Slightly darker material for eyes
+            child.material = new THREE.MeshPhysicalMaterial({
+              color: new THREE.Color(0x303030),
+              metalness: 0.4,
+              roughness: 0.2,
+              clearcoat: 0.8,
+              clearcoatRoughness: 0.2
             });
           } else {
+            // Clean white material for the face
             child.material = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color(0x0088ff),
-              emissive: new THREE.Color(0x001133),
-              metalness: 0.5,
-              roughness: 0.2,
-              transmission: 0.4,
-              thickness: 0.5,
-              opacity: 5,
-              transparent: true,
+              color: new THREE.Color(0xbbddff),
+              metalness: 0.2,
+              roughness: 0.3,
               clearcoat: 1.0,
-              clearcoatRoughness: 0.1
+              clearcoatRoughness: 0.1,
+              envMapIntensity: 0.8
             });
           }
         }
@@ -110,6 +60,7 @@ const Face = ({ isSpeaking }) => {
 
       scene.add(mesh);
       mixerRef.current = new THREE.AnimationMixer(mesh);
+      
     });
 
     return () => {
@@ -119,7 +70,7 @@ const Face = ({ isSpeaking }) => {
     };
   }, [scene, gl]);
 
-  // Enhanced mouth animation with proper stopping
+  // Mouth animation
   useFrame((state, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
@@ -135,26 +86,30 @@ const Face = ({ isSpeaking }) => {
           if (lastSpeakingState.current !== isSpeaking) {
             lastSpeakingState.current = isSpeaking;
             
-            // If stopped speaking, immediately reset mouth position
+            // Immediately reset mouth position when stopping speaking
             if (!isSpeaking) {
               if (mouthOpenIndex !== undefined) head.morphTargetInfluences[mouthOpenIndex] = 0;
               if (jawOpenIndex !== undefined) head.morphTargetInfluences[jawOpenIndex] = 0;
               if (mouthSmileIndex !== undefined) head.morphTargetInfluences[mouthSmileIndex] = 0.1;
+              return; // Exit early when stopping speech
             }
           }
 
           if (isSpeaking) {
             const time = state.clock.elapsedTime;
-            const openAmount = Math.sin(time * 15) * 0.5 + 0.5;
+            const baseSpeed = 15;
+            const variation = Math.sin(time * 8) * 0.2;
+            const openAmount = (Math.sin(time * baseSpeed) * 0.5 + 0.5) + variation;
+            const microMovement = Math.sin(time * 30) * 0.1;
             
             if (mouthOpenIndex !== undefined) {
-              head.morphTargetInfluences[mouthOpenIndex] = openAmount * 0.5;
+              head.morphTargetInfluences[mouthOpenIndex] = openAmount * 0.4 + microMovement;
             }
             if (jawOpenIndex !== undefined) {
               head.morphTargetInfluences[jawOpenIndex] = openAmount * 0.3;
             }
             if (mouthSmileIndex !== undefined) {
-              head.morphTargetInfluences[mouthSmileIndex] = 0.2;
+              head.morphTargetInfluences[mouthSmileIndex] = 0.1 + (Math.sin(time * 3) * 0.05);
             }
           }
         }
@@ -173,26 +128,36 @@ const VirtualAssistant = ({ isSpeaking }) => {
           fov: 45,
           near: 1,
           far: 20,
-          position: [-1.5, 0.5, 2.5] // Adjusted for centered view
+          position: [0, 0, 3]
         }}
       >
+        {/* Pure black background */}
         <color attach="background" args={['#000000']} />
         
-        <MatrixBackground />
-        
-        {/* Adjusted lighting for centered avatar */}
+        {/* Lighting setup */}
         <ambientLight intensity={0.4} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#0088ff" />
+        
+        {/* Main rim light */}
         <spotLight
-          position={[0, 5, 0]}
-          intensity={1}
-          color="#00ffff"
-          angle={0.5}
+          position={[-2, 2, 2]}
+          intensity={10}
+          color="#ffffff"
+          angle={0.6}
           penumbra={1}
+          decay={2}
         />
+        
+        {/* Fill light */}
+        <pointLight
+          position={[2, 0, 1]}
+          intensity={0.4}
+          color="#ffffff"
+        />
+        
+        {/* Top light */}
         <directionalLight
-          position={[0, 10, 5]}
-          intensity={0.8}
+          position={[0, 3, 0]}
+          intensity={0.3}
           color="#ffffff"
         />
 
@@ -200,10 +165,10 @@ const VirtualAssistant = ({ isSpeaking }) => {
         
         <OrbitControls
           enableDamping
-          minDistance={2} // Adjusted for new scale
+          minDistance={2}
           maxDistance={4}
-          minAzimuthAngle={-Math.PI / 2}
-          maxAzimuthAngle={Math.PI / 2}
+          minAzimuthAngle={-Math.PI / 4}
+          maxAzimuthAngle={Math.PI / 4}
           maxPolarAngle={Math.PI / 1.8}
           target={[0, 0, 0]}
         />
