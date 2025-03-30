@@ -31,7 +31,9 @@ To get started with the Mental Health Chatbot, follow these steps:
     cd hoohacks2025
     ```
 
-2. **Install dependencies**:
+2. **Add your Gemini api key into the .env file where it says "secretgeminiapikey"**.
+
+3. **Install dependencies**:
     ```bash
     npm install
     npm install three @react-three/fiber @react-three/drei google-auth-library @google/generative-ai
@@ -39,12 +41,12 @@ To get started with the Mental Health Chatbot, follow these steps:
     npm install vite --save-dev
     ```
 
-3. **Run the application**:
+4. **Run the application**:
     ```bash
     npm run dev
     ```
 
-4. **press "o + enter"**.
+5. **press "o + enter"**.
 
 ## Usage
 
