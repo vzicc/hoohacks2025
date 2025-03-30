@@ -29,8 +29,9 @@ const Face = ({ isSpeaking }) => {
       const mesh = gltf.scene.children[0];
       meshRef.current = mesh;
 
-      mesh.scale.set(6, 6, 6);
-      mesh.position.set(0, 0, 0);
+      mesh.scale.set(5, 5, 5);
+      mesh.position.set(0, 0.10, 0); // Lower the head slightly
+      mesh.rotation.set(0, 0, 0.03); // Counteract default tilt
 
       // Apply new materials for a clean, white appearance
       mesh.traverse((child) => {
@@ -97,20 +98,45 @@ const Face = ({ isSpeaking }) => {
 
           if (isSpeaking) {
             const time = state.clock.elapsedTime;
-            const baseSpeed = 15;
-            const variation = Math.sin(time * 8) * 0.2;
-            const openAmount = (Math.sin(time * baseSpeed) * 0.5 + 0.5) + variation;
-            const microMovement = Math.sin(time * 30) * 0.1;
+            
+            // Create vowel-like patterns
+            const vowelSpeed = 12;
+            const consonantSpeed = 18;
+            
+            // Vowel movement (slower, wider opening)
+            const vowelMovement = Math.sin(time * vowelSpeed) * 0.5 + 0.5;
+            
+            // Consonant movement (faster, shorter opening)
+            const consonantMovement = Math.sin(time * consonantSpeed) * 0.3;
+            
+            // Combine movements with natural variation
+            const naturalVariation = Math.sin(time * 4) * 0.1;
+            const openAmount = (vowelMovement + consonantMovement + naturalVariation) * 0.7;
+
+            // Add micro-movements for more realism
+            const microMovement = Math.sin(time * 30) * 0.05;
             
             if (mouthOpenIndex !== undefined) {
-              head.morphTargetInfluences[mouthOpenIndex] = openAmount * 0.4 + microMovement;
+              // Smooth the mouth movement
+              const targetOpen = Math.max(0, Math.min(0.8, openAmount + microMovement));
+              head.morphTargetInfluences[mouthOpenIndex] = targetOpen;
             }
+            
             if (jawOpenIndex !== undefined) {
-              head.morphTargetInfluences[jawOpenIndex] = openAmount * 0.3;
+              // Jaw follows mouth but with less intensity
+              head.morphTargetInfluences[jawOpenIndex] = openAmount * 0.4;
             }
+            
             if (mouthSmileIndex !== undefined) {
-              head.morphTargetInfluences[mouthSmileIndex] = 0.1 + (Math.sin(time * 3) * 0.05);
+              // Subtle smile variation
+              const smileAmount = 0.1 + Math.sin(time * 2) * 0.05;
+              head.morphTargetInfluences[mouthSmileIndex] = smileAmount;
             }
+          } else {
+            // Ensure mouth is closed when not speaking
+            if (mouthOpenIndex !== undefined) head.morphTargetInfluences[mouthOpenIndex] = 0;
+            if (jawOpenIndex !== undefined) head.morphTargetInfluences[jawOpenIndex] = 0;
+            if (mouthSmileIndex !== undefined) head.morphTargetInfluences[mouthSmileIndex] = 0.1;
           }
         }
       }
@@ -138,19 +164,19 @@ const VirtualAssistant = ({ isSpeaking }) => {
         <ambientLight intensity={0.4} />
         
         {/* Main rim light */}
-        <spotLight
+        <spotLight 
           position={[-2, 2, 2]}
           intensity={10}
           color="#ffffff"
           angle={0.6}
-          penumbra={1}
+          penumbra={1} 
           decay={2}
         />
         
         {/* Fill light */}
         <pointLight
           position={[2, 0, 1]}
-          intensity={0.4}
+          intensity={1}
           color="#ffffff"
         />
         
@@ -163,7 +189,7 @@ const VirtualAssistant = ({ isSpeaking }) => {
 
         <Face isSpeaking={isSpeaking} />
         
-        <OrbitControls
+        <OrbitControls 
           enableDamping
           minDistance={2}
           maxDistance={4}
